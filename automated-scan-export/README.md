@@ -21,15 +21,16 @@ Color contrast errors are excluded in the findings export. Color contrast presen
     npm install
     ```
 
-1. Run the script using `node index.js`, providing:
+1. Run the script using `node index.js`, providing the following arguements:
 
-    For the first argument after tbe program name index.js, enter a list of the source titles separated by commmas
+    1. A comma-seperated list of the source titles to include.
+    2. The ARC API Access token for the account.
+
+    Example:
 
     ```bash
-    node index.js "Source One, Source Two, Source Three"
+    node index.js "Source One, Source Two, Source Three" <ARC API Access Token>
     ```
-
-Alternatively go to the file and add your API Key as a variable to replace "add api key" string
 
 ## File Overview
 
