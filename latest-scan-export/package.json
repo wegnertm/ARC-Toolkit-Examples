@@ -1,0 +1,24 @@
+{
+  "name": "latest-scan-export",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "Exports accessibility findings from the most recent (or date-range-scoped) ARC automated scan per source",
+  "keywords": [
+    "accessibility",
+    "automation",
+    "arc",
+    "tpgi",
+    "scan",
+    "findings"
+  ],
+  "author": "TPGi",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "node-fetch": "^3.3.2"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
