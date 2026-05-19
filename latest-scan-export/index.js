@@ -259,16 +259,18 @@ function buildFindingsSummaryRows(perSourceRowsMap) {
       const url = normalizeUrl(r.componentUrl ?? '');
       const key = `${source}|||${r.instanceEngineKey}|||${r.ruleKey}|||${url}`;
       const cur = counts.get(key) ?? {
-        sourceTitle:    source,
-        componentTitle: r.componentTitle,
-        componentUrl:   url,
-        engine:         r.instanceEngineKey || '',
-        ruleKey:        r.ruleKey,
-        ruleTitle:      r.ruleTitle || '',
-        ruleCriteria:   r.ruleCriteria || '',
-        ruleSeverity:   r.ruleSeverity || '',
-        ruleCategory:   r.ruleCategory || '',
-        instances:      0
+        sourceTitle:      source,
+        componentTitle:   r.componentTitle,
+        componentUrl:     url,
+        engine:           r.instanceEngineKey || '',
+        ruleKey:          r.ruleKey,
+        ruleTitle:        r.ruleTitle || '',
+        ruleCriteria:     r.ruleCriteria || '',
+        ruleSeverity:     r.ruleSeverity || '',
+        ruleCategory:     r.ruleCategory || '',
+        instances:        0,
+        ruleDescription:  r.ruleDescription || '',
+        ruleComplementary: r.ruleComplementary || ''
       };
       cur.instances++;
       counts.set(key, cur);
@@ -299,26 +301,6 @@ async function writeWorkbook(perSourceRowsMap, scanInfoMap, contrastBySource) {
   for (const info of scanInfoMap.values()) infoSheet.addRow(info);
   applyHeaderStyles(infoSheet);
 
-  // --- Findings Summary sheet ---
-  const findingsSummarySheet = wb.addWorksheet('Findings Summary');
-  findingsSummarySheet.columns = [
-    { header: 'Component',   key: 'componentTitle', width: 30 },
-    { header: 'URL',         key: 'componentUrl',   width: 50 },
-    { header: 'Engine',      key: 'engine',         width: 10 },
-    { header: 'Rule Title',  key: 'ruleTitle',      width: 40 },
-    { header: 'Severity',    key: 'ruleSeverity',   width: 12 },
-    { header: 'Category',    key: 'ruleCategory',   width: 14 },
-    { header: 'Instances',   key: 'instances',      width: 12 }
-  ];
-  const findingsSummaryRows = buildFindingsSummaryRows(perSourceRowsMap);
-  findingsSummaryRows.forEach(r => findingsSummarySheet.addRow(r));
-
-  const grandTotal = findingsSummaryRows.reduce((sum, r) => sum + r.instances, 0);
-  const totalRow = findingsSummarySheet.addRow({ componentTitle: 'TOTAL', instances: grandTotal });
-  totalRow.font = { bold: true };
-
-  applyHeaderStyles(findingsSummarySheet);
-
   // --- Contrast Summary sheet ---
   const contrastSheet = wb.addWorksheet('Contrast Summary');
   contrastSheet.columns = [
@@ -328,6 +310,28 @@ async function writeWorkbook(perSourceRowsMap, scanInfoMap, contrastBySource) {
   ];
   buildContrastSummaryRows(contrastBySource).forEach(r => contrastSheet.addRow(r));
   applyHeaderStyles(contrastSheet);
+
+  // --- Findings Summary sheet ---
+  const findingsSummarySheet = wb.addWorksheet('Findings Summary');
+  findingsSummarySheet.columns = [
+    { header: 'Component',      key: 'componentTitle',    width: 30 },
+    { header: 'URL',            key: 'componentUrl',      width: 50 },
+    { header: 'Engine',         key: 'engine',            width: 10 },
+    { header: 'Rule Title',     key: 'ruleTitle',         width: 40 },
+    { header: 'Severity',       key: 'ruleSeverity',      width: 12 },
+    { header: 'Category',       key: 'ruleCategory',      width: 14 },
+    { header: 'Instances',      key: 'instances',         width: 12 },
+    { header: 'Description',    key: 'ruleDescription',   width: 40 },
+    { header: 'Complementary',  key: 'ruleComplementary', width: 40 }
+  ];
+  const findingsSummaryRows = buildFindingsSummaryRows(perSourceRowsMap);
+  findingsSummaryRows.forEach(r => findingsSummarySheet.addRow(r));
+
+  const grandTotal = findingsSummaryRows.reduce((sum, r) => sum + r.instances, 0);
+  const totalRow = findingsSummarySheet.addRow({ componentTitle: 'TOTAL', instances: grandTotal });
+  totalRow.font = { bold: true };
+
+  applyHeaderStyles(findingsSummarySheet);
 
   // --- Detailed Findings sheet (opt-in via --include-details) ---
   if (INCLUDE_DETAIL) {
