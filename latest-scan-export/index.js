@@ -1,6 +1,11 @@
 import fetch from 'node-fetch';
 import ExcelJS from 'exceljs';
+import { mkdirSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { WCAG_REFERENCE, WCAG_TESTS } from './data.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ==== Config ====
 // Usage:
@@ -286,6 +291,36 @@ function buildFindingsSummaryRows(perSourceRowsMap) {
 }
 
 
+function formatScanDate(isoString) {
+  const d = new Date(isoString);
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const yyyy = d.getUTCFullYear();
+  return `${mm}_${dd}_${yyyy}`;
+}
+
+function resolveOutputPath(scanInfoMap) {
+  const dates = Array.from(scanInfoMap.values())
+    .map(i => new Date(i.date))
+    .filter(d => !isNaN(d));
+  const latestDate = dates.length > 0
+    ? new Date(Math.max(...dates.map(d => d.getTime())))
+    : new Date();
+  const dateStr = formatScanDate(latestDate.toISOString());
+
+  if (SOURCES.length === 1) {
+    const source = SOURCES[0];
+    const folder = join(__dirname, 'ARC Reports', source);
+    mkdirSync(folder, { recursive: true });
+    return join(folder, `${source} - ${dateStr}.xlsx`);
+  } else {
+    const label = SOURCES.join(', ');
+    const folder = join(__dirname, 'ARC Reports', 'Multiple Sources');
+    mkdirSync(folder, { recursive: true });
+    return join(folder, `${label} - ${dateStr}.xlsx`);
+  }
+}
+
 async function writeWorkbook(perSourceRowsMap, scanInfoMap, contrastBySource) {
   const wb = new ExcelJS.Workbook();
 
@@ -361,12 +396,9 @@ async function writeWorkbook(perSourceRowsMap, scanInfoMap, contrastBySource) {
     applyHeaderStyles(detailSheet);
   }
 
-  const filename = SOURCES.length === 1
-    ? `${SOURCES[0]} - Accessibility_Findings.xlsx`
-    : 'Multiple Sources - Accessibility_Findings.xlsx';
-
-  await wb.xlsx.writeFile(filename);
-  log(`✅ Written: "${filename}"`);
+  const outputPath = resolveOutputPath(scanInfoMap);
+  await wb.xlsx.writeFile(outputPath);
+  log(`✅ Written: "${outputPath}"`);
 }
 
 // ==== Main ====
