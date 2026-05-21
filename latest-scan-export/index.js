@@ -432,7 +432,7 @@ async function run() {
         perSourceRowsMap.get(source).push({
           sourceTitle:        source,
           componentTitle:     f.componentTitle,
-          componentUrl:       f.componentUrl,
+          componentUrl:       normalizeUrl(f.componentUrl ?? ''),
           instanceEngineKey:  f.engineKey,
           jobDate:            f.jobDate,
           instanceLocator:    f.instanceLocator,
